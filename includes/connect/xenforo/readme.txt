@@ -1,0 +1,1 @@
+Go to http://lemon9x.com/forum for support to connect to Xenforo

@@ -1,0 +1,10 @@
+<?php
+/**
+* @ Project: ID Account System 1.5.0
+* @ Author: Yplitgroup (c)2012
+* @ Email: yplitgroup@gmail.com
+* @ Website: http://lemon9x.com 
+* @ Phone: 0166.26.26.009
+* @ Project ID: 876609683c4c7e392848e94d9f62e149
+**/
+ // ############### CHECK ##############if( !defined('IS_MAIN') ) die(" Stop!!! ");$error = ''; $f->load('yplitgroupChangeDb', array( 'uc' ) );require( DIR . '/includes/connect/uc/function.php' );$uc = new uc( $param );$user = $uc->get_user_by_username( $username );if( empty( $user ) and defined( 'IS_USER' ) ){	// Not Uc Account: Register 	$q = "SELECT 1 FROM `". UC_TABLE_PREFIX ."members` WHERE `email` = ". $db->e( $infoUser['email'] ); // Check Email email 	$result = $db->query( $q );	if( $db->sql_numrows( $result ) == 0 ) // Not exists email, so register 	{		$uc_id_user = $uc->add_user( $username, $password, $infoUser['email'] );		$user = $uc->get_user_by_uid( $uc_id_user );	}}if( isset( $user ) and $user['password'] == md5( md5( $password ) . $user['salt'] ) ){	// It's me 	define( 'IS_USER_UC', true );	define( 'USERID_UC', $user['uid'] );		// Login to Uc 	$mtime = explode(' ', microtime());	$_SGLOBAL['timestamp'] = $mtime[1];		$setarr = array(		'uid' => $user['uid'],		'username' => addslashes($username),		'password' => md5("$user[uid]|$_SGLOBAL[timestamp]") );	$ip = getonlineip(1);	$setarr['lastactivity'] = intval( $_SGLOBAL['timestamp'] );	$setarr['ip'] = $ip;		//$uc->inserttable('session', $setarr, 0, true, 1);	$f->load('yplitgroupChangeDb', array( 'uc' ) );	$result = $db->query( 'INSERT INTO `'. UC_TABLE_PREFIX .'session` 		 ( uid, username, password, lastactivity, ip )	VALUE( '. $setarr['uid'] .',"'. $setarr['username'] .'", "'. $setarr['password'] .'", '. $setarr['lastactivity'] .', '. $setarr['ip'] .')	' );	$param['cookie']->set( UC_COOKIE_PREFIX . 'auth', $uc->authcode("$setarr[password]\t$setarr[uid]", 'ENCODE'), COOKIE_LIVE_TIME );	$param['cookie']->set( UC_COOKIE_PREFIX . 'loginuser', $passport['username'], COOKIE_LIVE_TIME );	$param['cookie']->set( UC_COOKIE_PREFIX . '_refer', '' );}
